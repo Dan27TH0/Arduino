@@ -21,6 +21,8 @@ private:
     // Configuración
     const String CLAVE_CORRECTA = "1587";          // Cambia esto por tu clave
     const unsigned long TIEMPO_ESPERA = 3000;      // 3 segundos entre intentos
+    unsigned long tiempoUltimoCambio = 0;
+    const unsigned long INTERVALO_CIERRE = 5000;  // 7 segundos
     String UID_PERMITIDO = "B3 67 7A 94";   // Ejemplo de UID permitido
     
     // Estado
@@ -60,6 +62,7 @@ private:
         pantalla.mostrarMensaje("Por: " + metodo, 0, 1);
         desbloqueado = true;
         chapa.abrirPuerta();
+        tiempoUltimoCambio = millis();
         publicarEstado("DESBLOQUEADO");
         reiniciarIntentos();
         buzzer.detenerAlarma();
@@ -109,7 +112,14 @@ private:
     void verificarRFID() {
         String uid = rfid.checkCard();
         if (uid != "") {
-            if (uid.equalsIgnoreCase(UID_PERMITIDO)) {
+            // Normaliza ambos UIDs (elimina espacios al inicio/fin y convierte a mayúsculas)
+            uid.trim();
+            uid.toUpperCase();
+            String uidPermitido = UID_PERMITIDO;
+            uidPermitido.trim();
+            uidPermitido.toUpperCase();
+            
+            if (uid == uidPermitido) {
                 concederAcceso("RFID");
             } else {
                 denegarAcceso();
@@ -134,10 +144,8 @@ public:
     }
 
     void mostrarMensajeInicial() {
-        pantalla.limpiar();
-        pantalla.mostrarMensaje("Presione # para", 0, 0);
-        pantalla.mostrarMensaje("ingresar clave", 0, 1);
-        pantalla.mostrarMensaje("o acerque RFID", 0, 2);
+        pantalla.mostrarMensaje("Presione # o", 0, 0);
+        pantalla.mostrarMensaje("acerque tarjeta", 0, 1);
     }
 
     char leerTecla() { 
@@ -162,8 +170,10 @@ public:
     void verificarClave() {
         if (claveIngresada == CLAVE_CORRECTA) {
             concederAcceso();
+            pantalla.limpiar();
         } else {
             denegarAcceso();
+            pantalla.limpiar();
         }
         enEspera = true;
         tiempoReferencia = millis();
@@ -171,6 +181,10 @@ public:
 
     void actualizar() {
         if (bloqueoPorIntentos) return;  // No hace nada si está bloqueada
+
+        if (desbloqueado && millis() - tiempoUltimoCambio >= INTERVALO_CIERRE) {
+            chapa.cerrarPuerta();
+        }
 
         // 1. Verificación constante de tarjetas RFID
         verificarRFID();

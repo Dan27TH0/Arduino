@@ -17,7 +17,6 @@ public:
         Wire.begin(pinSDA, pinSCL);
         lcd.init();
         lcd.backlight();
-        limpiar();
     }
 
     void mostrarMensaje(const String &mensaje, int col = 0, int fila = 0) {
