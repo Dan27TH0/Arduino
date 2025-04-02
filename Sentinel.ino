@@ -20,8 +20,8 @@ void loop() {
         cerradura.ingresarClave();
     }
 
-   // Procesar tecla para desactivar alarma
-    if (cerradura.getBuzzer().alarmaActivada()) {
-        cerradura.getBuzzer().procesarTecla(tecla);
-    }
+  //  // Procesar tecla para desactivar alarma
+  //   if (cerradura.getBuzzer().alarmaActivada()) {
+  //       cerradura.getBuzzer().procesarTecla(tecla);
+  //   }
 }

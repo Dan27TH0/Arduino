@@ -17,11 +17,11 @@ public:
 
     void actualizar() {
         bool estadoActual = (digitalRead(pinIman) == LOW);
-        
+        Serial.println(estadoActual);
         if (estadoActual != estadoAnterior) {
             estadoAnterior = estadoActual;
             if (!estadoActual) {
-                buzzer.sonarAlarma(2000);
+                // buzzer.sonarAlarma(2000);
                 ultimaDeteccion = millis();
             }
         }
