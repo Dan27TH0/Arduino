@@ -65,6 +65,26 @@ public:
         if (!client.connected()) reconnect();
         client.loop();
     }
+    String obtenerFecha() {
+        // Implementación para obtener fecha actual (YYYY-MM-DD)
+        time_t now = time(nullptr);
+        struct tm timeinfo;
+        localtime_r(&now, &timeinfo);
+        char buffer[11];
+        strftime(buffer, sizeof(buffer), "%Y-%m-%d", &timeinfo);
+        return String(buffer);
+    }
+
+    String obtenerHora() {
+        // Implementación para obtener hora actual (HH:MM:SS)
+        time_t now = time(nullptr);
+        struct tm timeinfo;
+        localtime_r(&now, &timeinfo);
+        char buffer[9];
+        strftime(buffer, sizeof(buffer), "%H:%M:%S", &timeinfo);
+        return String(buffer);
+    }
+
 };
 
 #endif

@@ -1,27 +1,43 @@
 #include "Cerradura.h"
 #include "Iman.h"
+#include "ConexionIoT.h"
 
 Cerradura cerradura(21, 5);
-Iman iman(34, cerradura.getBuzzer());
+Iman iman(34, cerradura.getBuzzer());  // Iman simple sin callback
+ConexionIoT iot;
+
+bool ultimoEstadoIman = false;
 
 void setup() {
     Serial.begin(115200);
+    iot.conectarWiFi();
     cerradura.iniciar();
-    Serial.println("Sistema iniciado");
+    
+    // Inicializar el estado del imán al arrancar
+    ultimoEstadoIman = iman.estaPresente();
+    // Publicar estado inicial
+    iot.publicar("sentinel/estadoPuertaAbierta", ultimoEstadoIman ? "ABIERTO" : "CERRADO");
+    
+    Serial.println("Sistema iniciado. Estado inicial de la puerta: " + String(ultimoEstadoIman ? "ABIERTO" : "CERRADO"));
 }
 
 void loop() {
-    char tecla = cerradura.leerTecla();
-
+    // Actualizar componentes
     iman.actualizar();
     cerradura.actualizar();
+    // iot.loop();
 
-    if (tecla == '#') {
+    // Control del imán y publicación MQTT
+    bool estadoActual = iman.estaPresente();
+    
+        Serial.println("Cambio detectado en el imán: " + String(estadoActual ? "ABIERTO" : "CERRADO"));
+        ultimoEstadoIman = estadoActual;
+        iot.publicar("sentinel/estadoPuertaAbierta", estadoActual ? "ABIERTO" : "CERRADO");
+    
+
+    // Control del teclado
+    if (cerradura.leerTecla() == '#') {
         cerradura.ingresarClave();
     }
-
-  //  // Procesar tecla para desactivar alarma
-  //   if (cerradura.getBuzzer().alarmaActivada()) {
-  //       cerradura.getBuzzer().procesarTecla(tecla);
-  //   }
 }
+
